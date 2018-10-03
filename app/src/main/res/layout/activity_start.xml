@@ -24,4 +24,13 @@
         android:layout_marginBottom="180dp"
         android:text="Sign Up" />
 
+    <Button
+        android:id="@+id/btn_sign_in"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true"
+        android:layout_marginBottom="112dp"
+        android:text="Sign In" />
+
 </RelativeLayout>
