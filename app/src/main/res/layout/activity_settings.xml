@@ -13,15 +13,14 @@
         android:layout_alignParentTop="true"
         android:layout_centerHorizontal="true"
         android:layout_marginTop="65dp"
-        tools:src="@tools:sample/avatars" />
+        android:src="@drawable/user_default" />
 
     <TextView
         android:id="@+id/txtName"
         android:layout_width="200dp"
-        android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
+        android:layout_height="30dp"
         android:layout_centerHorizontal="true"
-        android:layout_marginBottom="206dp"
+        android:layout_below="@id/settings_image"
         android:text="Name"
         android:textSize="25sp" />
 
@@ -29,29 +28,29 @@
         android:id="@+id/txtStatus"
         android:layout_width="200dp"
         android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
         android:layout_centerHorizontal="true"
-        android:layout_marginBottom="173dp"
+        android:layout_below="@id/txtName"
         android:text="Status"
         android:textSize="20sp" />
 
     <Button
         android:id="@+id/chg_img_btn"
-        android:layout_width="wrap_content"
+        android:layout_marginTop="20dp"
+        android:layout_width="150dp"
         android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
         android:layout_centerHorizontal="true"
-        android:layout_marginBottom="83dp"
+        android:layout_below="@id/txtStatus"
+        android:background="@color/blue"
         android:text="Change Image" />
 
     <Button
         android:id="@+id/cng_sts_btn"
-        android:layout_width="wrap_content"
+        android:layout_marginTop="5dp"
+        android:layout_width="150dp"
         android:layout_height="wrap_content"
         android:layout_alignStart="@+id/chg_img_btn"
-        android:layout_alignParentBottom="true"
-        android:layout_marginStart="-7dp"
-        android:layout_marginBottom="19dp"
+        android:layout_below="@id/chg_img_btn"
+        android:background="@color/blue"
         android:text="Change Status" />
 
 </RelativeLayout>
