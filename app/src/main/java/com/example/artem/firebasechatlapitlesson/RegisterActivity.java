@@ -18,6 +18,10 @@ import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+
+import java.util.HashMap;
 
 public class RegisterActivity extends AppCompatActivity {
 
@@ -25,6 +29,7 @@ public class RegisterActivity extends AppCompatActivity {
     private Button btnCreate;
     private FirebaseAuth mAuth;
     private ProgressDialog progressDialog;
+    private DatabaseReference databaseReference;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -61,20 +66,39 @@ public class RegisterActivity extends AppCompatActivity {
         });
     }
 
-    private void registerUser(String dsplName, String dsplEmail, String dsplPassword) {
+    private void registerUser(final String dsplName, String dsplEmail, String dsplPassword) {
 
         mAuth.createUserWithEmailAndPassword(dsplEmail, dsplPassword)
                 .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
                     @Override
                     public void onComplete(@NonNull Task<AuthResult> task) {
                         if (task.isSuccessful()) {
-                            progressDialog.dismiss();
-                            Log.d("Log", "createUserWithEmail:success");
-                            Toast.makeText(RegisterActivity.this, "Authentication success.", Toast.LENGTH_SHORT).show();
-                            Intent mainIntent = new Intent(RegisterActivity.this, MainActivity.class);
-                            mainIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-                            startActivity(mainIntent);
-                            finish();
+
+                            FirebaseUser current_user = FirebaseAuth.getInstance().getCurrentUser();
+                            String uid = current_user.getUid();
+                            databaseReference = FirebaseDatabase.getInstance().getReference().child("ChatUsers").child(uid);
+
+                            HashMap<String, String> userMap = new HashMap<>();
+                            userMap.put("name", dsplName);
+                            userMap.put("status", "Here is Johnny!");
+                            userMap.put("image", "default");
+                            userMap.put("thumb_image", "default");
+
+                            databaseReference.setValue(userMap).addOnCompleteListener(new OnCompleteListener<Void>() {
+                                @Override
+                                public void onComplete(@NonNull Task<Void> task) {
+                                    if (task.isSuccessful()) {
+                                         progressDialog.dismiss();
+                                         Log.d("Log", "createUserWithEmail:success");
+                                         Toast.makeText(RegisterActivity.this, "Authentication success.", Toast.LENGTH_SHORT).show();
+                                         Intent mainIntent = new Intent(RegisterActivity.this, MainActivity.class);
+                                         mainIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                                         startActivity(mainIntent);
+                                         finish();
+                                    }
+                                }
+                            });
+//
                         } else {
                             progressDialog.hide();
                             // If sign in fails, display a message to the user.
