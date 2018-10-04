@@ -19,7 +19,9 @@
         <activity android:name=".StartActivity" />
         <activity android:name=".RegisterActivity" />
         <activity android:name=".LoginActivity" />
-        <activity android:name=".SettingsActivity"></activity>
+        <activity android:name=".SettingsActivity" />
+        <activity android:name=".StatusActivity"
+            android:parentActivityName=".SettingsActivity"></activity>
     </application>
 
 </manifest>

@@ -1,8 +1,11 @@
 package com.example.artem.firebasechatlapitlesson;
 
+import android.content.Intent;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.view.View;
+import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -24,14 +27,21 @@ public class SettingsActivity extends AppCompatActivity {
     private CircleImageView circleImageView;
     private TextView user_name, user_status;
 
+    Button btnCngImg, btnCngSts;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_settings);
 
+        getSupportActionBar().setTitle("Account Settings");
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+
         circleImageView = (CircleImageView) findViewById(R.id.settings_image);
         user_name = (TextView) findViewById(R.id.txtName);
         user_status = (TextView) findViewById(R.id.txtStatus);
+        btnCngImg = (Button) findViewById(R.id.chg_img_btn);
+        btnCngSts = (Button) findViewById(R.id.cng_sts_btn);
 
         firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
 
@@ -57,7 +67,16 @@ public class SettingsActivity extends AppCompatActivity {
             }
         });
 
-        getSupportActionBar().setTitle("Account Settings");
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        btnCngSts.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+                String status_value = user_status.getText().toString();
+                Intent statusIntent = new Intent(SettingsActivity.this, StatusActivity.class);
+                statusIntent.putExtra("status_value", status_value);
+                startActivity(statusIntent);
+                finish();
+            }
+        });
     }
 }
