@@ -1,6 +1,8 @@
 package com.example.artem.firebasechatlapitlesson;
 
 import android.content.Intent;
+import android.support.design.widget.TabLayout;
+import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
@@ -13,6 +15,9 @@ import com.google.firebase.auth.FirebaseUser;
 public class MainActivity extends AppCompatActivity {
 
     private FirebaseAuth mAuth;
+    private ViewPager viewPager;
+    private TabAdapter tabAdapter;
+    private TabLayout tabLayout;
 //    private Toolbar toolbar;
 
     @Override
@@ -20,9 +25,15 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        viewPager = (ViewPager) findViewById(R.id.tab_pager);
+        tabLayout = (TabLayout) findViewById(R.id.main_tabs);
 //        toolbar = (Toolbar) findViewById(R.id.toolbar);
 //        setSupportActionBar(toolbar);
         getSupportActionBar().setTitle("FireChat");
+
+        tabAdapter = new TabAdapter(getSupportFragmentManager());
+        viewPager.setAdapter(tabAdapter);
+        tabLayout.setupWithViewPager(viewPager);
 
         mAuth = FirebaseAuth.getInstance();
     }
