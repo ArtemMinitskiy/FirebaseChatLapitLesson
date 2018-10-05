@@ -1,17 +1,20 @@
 package com.example.artem.firebasechatlapitlesson;
 
+import android.app.ProgressDialog;
 import android.content.Intent;
 import android.net.Uri;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -23,6 +26,9 @@ import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
+import com.squareup.picasso.Callback;
+import com.squareup.picasso.NetworkPolicy;
+import com.squareup.picasso.Picasso;
 import com.theartofdev.edmodo.cropper.CropImage;
 import com.theartofdev.edmodo.cropper.CropImageView;
 
@@ -39,6 +45,8 @@ public class SettingsActivity extends AppCompatActivity {
 
     private CircleImageView circleImageView;
     private TextView user_name, user_status;
+
+    private ProgressDialog progressDialog;
 
     Button btnCngImg, btnCngSts;
 
@@ -69,12 +77,30 @@ public class SettingsActivity extends AppCompatActivity {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                 String name = dataSnapshot.child("name").getValue().toString();
-                String image = dataSnapshot.child("image").getValue().toString();
+                final String image = dataSnapshot.child("image").getValue().toString();
                 String status = dataSnapshot.child("status").getValue().toString();
                 String thumb_image = dataSnapshot.child("thumb_image").getValue().toString();
 
                 user_name.setText(name);
                 user_status.setText(status);
+
+                Picasso.get().load(image).into(circleImageView);
+//                if(!image.equals("default")) {
+//
+//                    Picasso.get().load(image).networkPolicy(NetworkPolicy.OFFLINE)
+//                            .placeholder(R.drawable.user_default).into(circleImageView, new Callback() {
+//                        @Override
+//                        public void onSuccess() {
+//
+//                        }
+//
+//                        @Override
+//                        public void onError(Exception e) {
+//                            Picasso.get().load(image).placeholder(R.drawable.user_default).into(circleImageView);
+//                        }
+//
+//                    });
+//                }
             }
 
             @Override
@@ -127,17 +153,41 @@ public class SettingsActivity extends AppCompatActivity {
             CropImage.ActivityResult result = CropImage.getActivityResult(data);
 
             if (resultCode == RESULT_OK) {
+
+                progressDialog = new ProgressDialog(SettingsActivity.this);
+                progressDialog.setTitle("Uploading Image...");
+                progressDialog.setMessage("Please wait...");
+                progressDialog.setCanceledOnTouchOutside(false);
+                progressDialog.show();
+
                 Uri resultUri = result.getUri();
-                StorageReference filepath = storageReference.child("profile_images").child(random() + ".jpg");
+                final String current_user_id = firebaseUser.getUid();
+                final StorageReference filepath = storageReference.child("profile_images").child(current_user_id + ".jpg");
 
                 filepath.putFile(resultUri).addOnCompleteListener(new OnCompleteListener<UploadTask.TaskSnapshot>() {
                     @Override
                     public void onComplete(@NonNull Task<UploadTask.TaskSnapshot> task) {
 
                         if (task.isSuccessful()){
-                            Toast.makeText(SettingsActivity.this, "Working", Toast.LENGTH_SHORT).show();
+
+                            filepath.getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
+                                @Override
+                                public void onSuccess(Uri uri) {
+                                    String download_url = uri.toString();
+                                    databaseReference.child("image").setValue(download_url).addOnCompleteListener(new OnCompleteListener<Void>() {
+                                        @Override
+                                        public void onComplete(@NonNull Task<Void> task) {
+                                            if (task.isSuccessful()){
+                                                Toast.makeText(SettingsActivity.this, "Success uploading!", Toast.LENGTH_SHORT).show();
+                                                progressDialog.dismiss();
+                                            }
+                                        }
+                                    });
+                                }
+                            });
                         }else {
                             Toast.makeText(SettingsActivity.this, "Error in uploading", Toast.LENGTH_SHORT).show();
+                            progressDialog.dismiss();
                         }
                     }
                 });
@@ -148,15 +198,4 @@ public class SettingsActivity extends AppCompatActivity {
 
     }
 
-    public static String random() {
-        Random generator = new Random();
-        StringBuilder randomStringBuilder = new StringBuilder();
-        int randomeLength = generator.nextInt(MAX_LENGTH);
-        char tempChar;
-        for (int i = 0; i < randomeLength; i++) {
-            tempChar = (char) (generator.nextInt(96) + 32);
-            randomStringBuilder.append(tempChar);
-        }
-        return randomStringBuilder.toString();
-    }
 }
