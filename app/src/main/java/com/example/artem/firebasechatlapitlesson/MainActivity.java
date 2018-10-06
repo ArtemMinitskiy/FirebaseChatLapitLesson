@@ -18,7 +18,6 @@ public class MainActivity extends AppCompatActivity {
     private ViewPager viewPager;
     private TabAdapter tabAdapter;
     private TabLayout tabLayout;
-//    private Toolbar toolbar;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -27,8 +26,7 @@ public class MainActivity extends AppCompatActivity {
 
         viewPager = (ViewPager) findViewById(R.id.tab_pager);
         tabLayout = (TabLayout) findViewById(R.id.main_tabs);
-//        toolbar = (Toolbar) findViewById(R.id.toolbar);
-//        setSupportActionBar(toolbar);
+
         getSupportActionBar().setTitle("FireChat");
 
         tabAdapter = new TabAdapter(getSupportFragmentManager());
@@ -41,7 +39,6 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onStart() {
         super.onStart();
-        // Check if user is signed in (non-null) and update UI accordingly.
         FirebaseUser currentUser = mAuth.getCurrentUser();
         if (currentUser == null){
             sendBack();
@@ -73,7 +70,9 @@ public class MainActivity extends AppCompatActivity {
 
         }
         if (item.getItemId() == R.id.btn_users){
-
+            Intent usersIntent = new Intent(MainActivity.this, UsersActivity.class);
+            startActivity(usersIntent);
+            finish();
         }
         if (item.getItemId() == R.id.btn_log_out){
             FirebaseAuth.getInstance().signOut();
