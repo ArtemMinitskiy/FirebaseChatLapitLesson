@@ -73,7 +73,34 @@ public class ProfileActivity extends AppCompatActivity {
 
                 Picasso.get().load(image).placeholder(R.drawable.user_default).into(imageView);
 
-                progressDialog.dismiss();
+                friendsReference.child(firebaseAuth.getUid()).addListenerForSingleValueEvent(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+
+                        if (dataSnapshot.hasChild(user_id)){
+                            String req_type = dataSnapshot.child(user_id).child("request_type").getValue().toString();
+
+                            if (req_type.equals("received")){
+
+                                current_state = "req_received";
+                                sendReqBtn.setText("Accept Friend Request");
+                            }else { if (req_type.equals("sent")){
+                                current_state = "req_sent";
+                                sendReqBtn.setText("Cancel Friend Request");
+                            }
+
+                            }
+                        }
+                        progressDialog.dismiss();
+                    }
+
+                    @Override
+                    public void onCancelled(@NonNull DatabaseError databaseError) {
+
+                    }
+                });
+
+
             }
 
             @Override
@@ -86,6 +113,8 @@ public class ProfileActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 if (current_state.equals("not_friends")){
+
+                    sendReqBtn.setEnabled(false);
 
                     friendsReference.child(firebaseAuth.getUid())
                             .child(user_id)
@@ -101,12 +130,35 @@ public class ProfileActivity extends AppCompatActivity {
                                         .setValue("received").addOnSuccessListener(new OnSuccessListener<Void>() {
                                     @Override
                                     public void onSuccess(Void aVoid) {
+                                        sendReqBtn.setEnabled(true);
+                                        current_state = "req_sent";
+                                        sendReqBtn.setText("Cancel Friend Request");
+
                                         Toast.makeText(ProfileActivity.this, "Request Sent Successfully", Toast.LENGTH_SHORT).show();
                                     }
                                 });
                             }else {
                                 Toast.makeText(ProfileActivity.this, "Failed Sending Request", Toast.LENGTH_SHORT).show();
                             }
+                        }
+                    });
+                }
+
+
+                if (current_state.equals("req_sent")){
+                    friendsReference.child(firebaseAuth.getUid())
+                            .child(user_id).removeValue().addOnSuccessListener(new OnSuccessListener<Void>() {
+                        @Override
+                        public void onSuccess(Void aVoid) {
+                            friendsReference.child(user_id)
+                                    .child(firebaseAuth.getUid()).removeValue().addOnSuccessListener(new OnSuccessListener<Void>() {
+                                @Override
+                                public void onSuccess(Void aVoid) {
+                                    sendReqBtn.setEnabled(true);
+                                    current_state = "not_friends";
+                                    sendReqBtn.setText("Send Friend Request");
+                                }
+                            });
                         }
                     });
                 }
