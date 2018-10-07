@@ -2,12 +2,12 @@ package com.example.artem.firebasechatlapitlesson;
 
 import android.app.ProgressDialog;
 import android.content.Intent;
+import android.graphics.Bitmap;
 import android.net.Uri;
+import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
-import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
@@ -31,11 +31,15 @@ import com.squareup.picasso.Callback;
 import com.squareup.picasso.NetworkPolicy;
 import com.squareup.picasso.Picasso;
 import com.theartofdev.edmodo.cropper.CropImage;
-import com.theartofdev.edmodo.cropper.CropImageView;
 
-import java.util.Random;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 
 import de.hdodenhof.circleimageview.CircleImageView;
+import id.zelory.compressor.Compressor;
 
 public class SettingsActivity extends AppCompatActivity {
 
@@ -48,6 +52,8 @@ public class SettingsActivity extends AppCompatActivity {
     private TextView user_name, user_status;
 
     private ProgressDialog progressDialog;
+
+    private Bitmap thumb_bitmap;
 
     Button btnCngImg, btnCngSts;
 
@@ -86,23 +92,23 @@ public class SettingsActivity extends AppCompatActivity {
                 user_name.setText(name);
                 user_status.setText(status);
 
-                Picasso.get().load(image).into(circleImageView);
-//                if(!image.equals("default")) {
-//
-//                    Picasso.get().load(image).networkPolicy(NetworkPolicy.OFFLINE)
-//                            .placeholder(R.drawable.user_default).into(circleImageView, new Callback() {
-//                        @Override
-//                        public void onSuccess() {
-//
-//                        }
-//
-//                        @Override
-//                        public void onError(Exception e) {
-//                            Picasso.get().load(image).placeholder(R.drawable.user_default).into(circleImageView);
-//                        }
-//
-//                    });
-//                }
+//                Picasso.get().load(image).into(circleImageView);
+                if(!image.equals("default")) {
+
+                    Picasso.get().load(image).networkPolicy(NetworkPolicy.OFFLINE)
+                            .placeholder(R.drawable.user_default).into(circleImageView, new Callback() {
+                        @Override
+                        public void onSuccess() {
+
+                        }
+
+                        @Override
+                        public void onError(Exception e) {
+                            Picasso.get().load(image).placeholder(R.drawable.user_default).into(circleImageView);
+                        }
+
+                    });
+                }
             }
 
             @Override
@@ -163,8 +169,28 @@ public class SettingsActivity extends AppCompatActivity {
                 progressDialog.show();
 
                 Uri resultUri = result.getUri();
+
+                File thumb_file = new File(resultUri.getPath());
+
                 final String current_user_id = firebaseUser.getUid();
+
+                try {
+                      thumb_bitmap = new Compressor(this)
+                            .setMaxWidth(200)
+                            .setMaxHeight(200)
+                            .setQuality(75)
+                            .compressToBitmap(thumb_file);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+
+                ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                thumb_bitmap.compress(Bitmap.CompressFormat.JPEG, 100, baos);
+                final byte[] thumb_byte = baos.toByteArray();
+
                 final StorageReference filepath = storageReference.child("profile_images").child(current_user_id + ".jpg");
+
+                final StorageReference thumb_filepath = storageReference.child("profile_images").child("thumb_image").child(current_user_id + ".jpg");
 
                 filepath.putFile(resultUri).addOnCompleteListener(new OnCompleteListener<UploadTask.TaskSnapshot>() {
                     @Override
@@ -174,17 +200,37 @@ public class SettingsActivity extends AppCompatActivity {
 
                             filepath.getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
                                 @Override
-                                public void onSuccess(Uri uri) {
-                                    String download_url = uri.toString();
-                                    databaseReference.child("image").setValue(download_url).addOnCompleteListener(new OnCompleteListener<Void>() {
+                                public void onSuccess(final Uri uri) {
+                                    final String download_url = uri.toString();
+
+                                    UploadTask uploadTask = thumb_filepath.putBytes(thumb_byte);
+                                    uploadTask.addOnCompleteListener(new OnCompleteListener<UploadTask.TaskSnapshot>() {
                                         @Override
-                                        public void onComplete(@NonNull Task<Void> task) {
+                                        public void onComplete(@NonNull Task<UploadTask.TaskSnapshot> task) {
+
+                                            String thumb_download_url = uri.toString();
                                             if (task.isSuccessful()){
-                                                Toast.makeText(SettingsActivity.this, "Success uploading!", Toast.LENGTH_SHORT).show();
+
+                                                Map update_hashMap = new HashMap();
+                                                update_hashMap.put("image", download_url);
+                                                update_hashMap.put("thumb_image", thumb_download_url);
+                                                databaseReference.updateChildren(update_hashMap).addOnCompleteListener(new OnCompleteListener<Void>() {
+                                                    @Override
+                                                    public void onComplete(@NonNull Task<Void> task) {
+                                                        if (task.isSuccessful()){
+                                                            Toast.makeText(SettingsActivity.this, "Success uploading!", Toast.LENGTH_SHORT).show();
+                                                            progressDialog.dismiss();
+                                                        }
+                                                    }
+                                                });
+                                            }else {
+                                                Toast.makeText(SettingsActivity.this, "Error in uploading thumb image", Toast.LENGTH_SHORT).show();
                                                 progressDialog.dismiss();
                                             }
                                         }
                                     });
+
+
                                 }
                             });
                         }else {
