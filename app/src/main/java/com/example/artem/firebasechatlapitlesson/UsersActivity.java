@@ -59,7 +59,18 @@ public class UsersActivity extends AppCompatActivity {
             protected void onBindViewHolder(@NonNull UsersViewHolder holder, int position, @NonNull Users users) {
                 holder.setUser_name(users.getName());
                 holder.setUser_status(users.getStatus());
-//                holder.setUser_image(users.getThumb_image(), getApplicationContext());
+                holder.setUser_image(users.getThumb_image(), getApplicationContext());
+
+                final String user_id = getRef(position).getKey();
+
+                holder.view.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        Intent profileIntent = new Intent(UsersActivity.this, ProfileActivity.class);
+                        profileIntent.putExtra("user_id", user_id);
+                        startActivity(profileIntent);
+                    }
+                });
             }
 
             @Override
@@ -112,12 +123,12 @@ public class UsersActivity extends AppCompatActivity {
             user_status = (TextView) itemView.findViewById(R.id.user_status);
             user_status.setText(status);
         }
-//        public void setUser_image(String name, Context applicationContext){
-//            CircleImageView userImageView = (CircleImageView) itemView.findViewById(R.id.user_image);
-//
-//            Picasso.get().load(thumb_image).placeholder(R.drawable.user_default).into(userImageView);
-//
-//        }
+        public void setUser_image(String thumb_image, Context context){
+            CircleImageView userImageView = (CircleImageView) itemView.findViewById(R.id.user_image);
+
+            Picasso.get().load(thumb_image).placeholder(R.drawable.user_default).into(userImageView);
+
+        }
 
     }
 }
