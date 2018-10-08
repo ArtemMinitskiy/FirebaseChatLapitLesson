@@ -80,6 +80,7 @@ public class SettingsActivity extends AppCompatActivity {
         String current_uid = firebaseUser.getUid();
 
         databaseReference = FirebaseDatabase.getInstance().getReference().child("ChatUsers").child(current_uid);
+        databaseReference.keepSynced(true);
 
         databaseReference.addValueEventListener(new ValueEventListener() {
             @Override

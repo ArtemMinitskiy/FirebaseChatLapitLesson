@@ -94,8 +94,26 @@ public class ProfileActivity extends AppCompatActivity {
                             }
 
                             }
+                            progressDialog.dismiss();
+                        }else{
+
+                            friendsReference.child(firebaseAuth.getUid()).addListenerForSingleValueEvent(new ValueEventListener() {
+                                @Override
+                                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                                    if(dataSnapshot.hasChild(user_id)){
+                                        current_state = "friends";
+                                        sendReqBtn.setText("Unfriend this Person");
+                                    }
+                                    progressDialog.dismiss();
+                                }
+
+                                @Override
+                                public void onCancelled(@NonNull DatabaseError databaseError) {
+                                    progressDialog.dismiss();
+                                }
+                            });
                         }
-                        progressDialog.dismiss();
+
                     }
 
                     @Override
