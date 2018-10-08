@@ -22,6 +22,9 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 import com.squareup.picasso.Picasso;
 
+import java.text.DateFormat;
+import java.util.Date;
+
 public class ProfileActivity extends AppCompatActivity {
 
     private ImageView imageView;
@@ -32,7 +35,7 @@ public class ProfileActivity extends AppCompatActivity {
 
     private String current_state;
 
-    private DatabaseReference usersReference, friendsReference;
+    private DatabaseReference usersReference, friendsReqReference, friendsReference;
 
     private ProgressDialog progressDialog;
 
@@ -45,7 +48,8 @@ public class ProfileActivity extends AppCompatActivity {
 
         firebaseAuth = FirebaseAuth.getInstance().getCurrentUser();
         usersReference = FirebaseDatabase.getInstance().getReference().child("ChatUsers").child(user_id);
-        friendsReference = FirebaseDatabase.getInstance().getReference().child("Friend_request");
+        friendsReqReference = FirebaseDatabase.getInstance().getReference().child("Friend_request");
+        friendsReference = FirebaseDatabase.getInstance().getReference().child("Friend");
 
         progressDialog = new ProgressDialog(this);
         progressDialog.setTitle("Loading...");
@@ -73,7 +77,7 @@ public class ProfileActivity extends AppCompatActivity {
 
                 Picasso.get().load(image).placeholder(R.drawable.user_default).into(imageView);
 
-                friendsReference.child(firebaseAuth.getUid()).addListenerForSingleValueEvent(new ValueEventListener() {
+                friendsReqReference.child(firebaseAuth.getUid()).addListenerForSingleValueEvent(new ValueEventListener() {
                     @Override
                     public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
 
@@ -116,7 +120,7 @@ public class ProfileActivity extends AppCompatActivity {
 
                     sendReqBtn.setEnabled(false);
 
-                    friendsReference.child(firebaseAuth.getUid())
+                    friendsReqReference.child(firebaseAuth.getUid())
                             .child(user_id)
                             .child("request_type")
                             .setValue("sent")
@@ -124,13 +128,13 @@ public class ProfileActivity extends AppCompatActivity {
                         @Override
                         public void onComplete(@NonNull Task<Void> task) {
                             if (task.isSuccessful()){
-                                friendsReference.child(user_id)
+                                friendsReqReference.child(user_id)
                                         .child(firebaseAuth.getUid())
                                         .child("request_type")
                                         .setValue("received").addOnSuccessListener(new OnSuccessListener<Void>() {
                                     @Override
                                     public void onSuccess(Void aVoid) {
-                                        sendReqBtn.setEnabled(true);
+
                                         current_state = "req_sent";
                                         sendReqBtn.setText("Cancel Friend Request");
 
@@ -140,17 +144,18 @@ public class ProfileActivity extends AppCompatActivity {
                             }else {
                                 Toast.makeText(ProfileActivity.this, "Failed Sending Request", Toast.LENGTH_SHORT).show();
                             }
+                            sendReqBtn.setEnabled(true);
                         }
                     });
                 }
 
 
                 if (current_state.equals("req_sent")){
-                    friendsReference.child(firebaseAuth.getUid())
+                    friendsReqReference.child(firebaseAuth.getUid())
                             .child(user_id).removeValue().addOnSuccessListener(new OnSuccessListener<Void>() {
                         @Override
                         public void onSuccess(Void aVoid) {
-                            friendsReference.child(user_id)
+                            friendsReqReference.child(user_id)
                                     .child(firebaseAuth.getUid()).removeValue().addOnSuccessListener(new OnSuccessListener<Void>() {
                                 @Override
                                 public void onSuccess(Void aVoid) {
@@ -161,6 +166,39 @@ public class ProfileActivity extends AppCompatActivity {
                             });
                         }
                     });
+                }
+
+                if (current_state.equals("req_received")){
+
+                    final String currentDate = DateFormat.getDateTimeInstance().format(new Date());
+                    friendsReference.child(firebaseAuth.getUid())
+                            .child(user_id).setValue(currentDate).addOnSuccessListener(new OnSuccessListener<Void>() {
+                        @Override
+                        public void onSuccess(Void aVoid) {
+                            friendsReference.child(user_id).child(firebaseAuth.getUid())
+                                    .setValue(currentDate).addOnSuccessListener(new OnSuccessListener<Void>() {
+                                @Override
+                                public void onSuccess(Void aVoid) {
+                                    friendsReqReference.child(firebaseAuth.getUid())
+                                            .child(user_id).removeValue().addOnSuccessListener(new OnSuccessListener<Void>() {
+                                        @Override
+                                        public void onSuccess(Void aVoid) {
+                                            friendsReqReference.child(user_id)
+                                                    .child(firebaseAuth.getUid()).removeValue().addOnSuccessListener(new OnSuccessListener<Void>() {
+                                                @Override
+                                                public void onSuccess(Void aVoid) {
+                                                    sendReqBtn.setEnabled(true);
+                                                    current_state = "friends";
+                                                    sendReqBtn.setText("Unfriend this Person");
+                                                }
+                                            });
+                                        }
+                                    });
+                                }
+                            });
+                        }
+                    });
+
                 }
             }
         });
