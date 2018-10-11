@@ -21,16 +21,29 @@ public class MessagingService extends FirebaseMessagingService {
 
         String from_user_id = remoteMessage.getData().get("from_user_id");
 
-        NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(this)
-                .setSmallIcon(R.mipmap.ic_launcher).setContentTitle(notification_title).setContentText(notification_message);
+        NotificationCompat.Builder mBuilder =
+                new NotificationCompat.Builder(this)
+                        .setSmallIcon(R.mipmap.ic_launcher)
+                        .setContentTitle(notification_title)
+                        .setContentText(notification_message);
+
 
         Intent resultIntent = new Intent(click_action);
         resultIntent.putExtra("user_id", from_user_id);
 
+
         PendingIntent resultPendingIntent =
-                PendingIntent.getActivity(this, 0, resultIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+                PendingIntent.getActivity(
+                        this,
+                        0,
+                        resultIntent,
+                        PendingIntent.FLAG_UPDATE_CURRENT
+                );
 
         mBuilder.setContentIntent(resultPendingIntent);
+
+
+
 
         int mNotificationId = (int) System.currentTimeMillis();
 
