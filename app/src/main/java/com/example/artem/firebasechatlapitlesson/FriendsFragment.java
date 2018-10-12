@@ -1,12 +1,14 @@
 package com.example.artem.firebasechatlapitlesson;
 
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.DrawableRes;
 import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
@@ -78,22 +80,48 @@ public class FriendsFragment extends Fragment {
             protected void onBindViewHolder(@NonNull final FriendsViewHolder holder, int position, @NonNull Friends friends) {
                 holder.setDate(friends.getDate());
 
-                String list_user_id = getRef(position).getKey();
+                final String list_user_id = getRef(position).getKey();
 
                 friendDataBase.child(list_user_id).addValueEventListener(new ValueEventListener() {
                     @Override
                     public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                        String friendsName = dataSnapshot.child("name").getValue().toString();
+                        final String friendsName = dataSnapshot.child("name").getValue().toString();
                         String friendsImage = dataSnapshot.child("thumb_image").getValue().toString();
-//                        String friendsOnline = dataSnapshot.child("online").getValue().toString();
 
                         if (dataSnapshot.hasChild("online")){
-                            Boolean friendsOnline = (boolean) dataSnapshot.child("online").getValue();
+                            String friendsOnline = dataSnapshot.child("online").getValue().toString();
                             holder.setFriend_online(friendsOnline);
                         }
 
                         holder.setFriend_name(friendsName);
                         holder.setFriend_image(friendsImage, getContext());
+
+                        holder.view.setOnClickListener(new View.OnClickListener() {
+                            @Override
+                            public void onClick(View v) {
+                                CharSequence options[] = new CharSequence[]{"Open Profile", "Send message"};
+                                AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
+                                builder.setTitle("Select Options");
+                                builder.setItems(options, new DialogInterface.OnClickListener() {
+                                    @Override
+                                    public void onClick(DialogInterface dialog, int position) {
+
+                                        if (position == 0){
+                                            Intent profileIntent = new Intent(getContext(), ProfileActivity.class);
+                                            profileIntent.putExtra("user_id", list_user_id);
+                                            startActivity(profileIntent);
+                                        }
+                                        if (position == 1){
+                                            Intent chatIntent = new Intent(getContext(), ChatActivity.class);
+                                            chatIntent.putExtra("user_id", list_user_id);
+                                            chatIntent.putExtra("user_name", friendsName);
+                                            startActivity(chatIntent);
+                                        }
+                                    }
+                                });
+                                builder.show();
+                            }
+                        });
 
                     }
 
@@ -138,9 +166,9 @@ public class FriendsFragment extends Fragment {
             CircleImageView userImageView = (CircleImageView) itemView.findViewById(R.id.user_image);
             Picasso.get().load(friend_image).placeholder(R.drawable.user_default).into(userImageView);
         }
-        public void setFriend_online(Boolean friend_online){
+        public void setFriend_online(String friend_online){
             ImageView onlineImage = (ImageView) view.findViewById(R.id.ic_online);
-            if (friend_online.equals(true)){
+            if (friend_online.equals("true")){
 
                 onlineImage.setVisibility(View.VISIBLE);
             }else {
