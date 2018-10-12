@@ -172,7 +172,7 @@ public class FriendsFragment extends Fragment {
 
                 onlineImage.setVisibility(View.VISIBLE);
             }else {
-                onlineImage.setImageResource(R.drawable.ic_offline);
+                onlineImage.setVisibility(View.INVISIBLE);
             }
         }
 

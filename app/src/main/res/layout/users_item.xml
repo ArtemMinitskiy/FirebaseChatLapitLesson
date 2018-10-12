@@ -39,11 +39,11 @@
     <ImageView
         android:id="@+id/ic_online"
         android:layout_width="15dp"
-        android:layout_height="wrap_content"
+        android:layout_height="15dp"
         android:layout_above="@+id/user_status"
         android:layout_alignParentEnd="true"
-        android:layout_marginEnd="51dp"
-        android:layout_marginBottom="-40dp"
+        android:layout_marginEnd="15dp"
+        android:layout_marginBottom="-25dp"
         android:visibility="invisible"
         app:srcCompat="@drawable/ic_online" />
 
