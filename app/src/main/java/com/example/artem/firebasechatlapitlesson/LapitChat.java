@@ -32,23 +32,26 @@ public class LapitChat extends Application {
         Picasso.setSingletonInstance(built);
 
         userAuth = FirebaseAuth.getInstance();
-        userDatabase = FirebaseDatabase.getInstance().getReference()
-                .child("ChatUsers").child(userAuth.getCurrentUser().getUid());
 
-        userDatabase.addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+        if (userAuth.getCurrentUser() != null) {
+            userDatabase = FirebaseDatabase.getInstance().getReference()
+                    .child("ChatUsers").child(userAuth.getCurrentUser().getUid());
 
-                if (dataSnapshot != null) {
-                    userDatabase.child("online").onDisconnect().setValue(ServerValue.TIMESTAMP);
+            userDatabase.addValueEventListener(new ValueEventListener() {
+                @Override
+                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+
+                    if (dataSnapshot != null) {
+                        userDatabase.child("online").onDisconnect().setValue(ServerValue.TIMESTAMP);
+
+                    }
+                }
+
+                @Override
+                public void onCancelled(@NonNull DatabaseError databaseError) {
 
                 }
-            }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) {
-
-            }
-        });
+            });
+        }
     }
 }

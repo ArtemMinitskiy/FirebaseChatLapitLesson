@@ -38,7 +38,9 @@ public class MainActivity extends AppCompatActivity {
         tabLayout.setupWithViewPager(viewPager);
 
         mAuth = FirebaseAuth.getInstance();
-        userRef = FirebaseDatabase.getInstance().getReference().child("ChatUsers").child(mAuth.getCurrentUser().getUid());
+        if (mAuth.getCurrentUser() != null) {
+            userRef = FirebaseDatabase.getInstance().getReference().child("ChatUsers").child(mAuth.getCurrentUser().getUid());
+        }
     }
 
     @Override

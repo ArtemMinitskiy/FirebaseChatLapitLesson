@@ -6,4 +6,5 @@
     <color name="darkBlue">#0097A7</color>
     <color name="blue">#bee2e6</color>
     <color name="black">#000000</color>
+    <color name="messageColor">#90ffc0</color>
 </resources>

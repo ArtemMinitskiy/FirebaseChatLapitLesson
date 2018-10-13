@@ -1,11 +1,14 @@
 package com.example.artem.firebasechatlapitlesson;
 
 import android.content.Context;
+import android.os.Message;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.text.TextUtils;
 import android.util.Log;
@@ -13,10 +16,12 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.ImageButton;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.text.format.DateFormat;
 
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -24,7 +29,9 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ServerValue;
 import com.google.firebase.database.ValueEventListener;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import de.hdodenhof.circleimageview.CircleImageView;
@@ -38,6 +45,10 @@ public class ChatActivity extends AppCompatActivity {
     private CircleImageView userImage;
     private ImageButton chatAddButton, chatSendButton;
     private EditText chatMessage;
+    private RecyclerView recyclerView;
+    private List<Messages> messagesList;
+    private LinearLayoutManager layoutManager;
+    private MessageAdapter messageAdapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -47,7 +58,9 @@ public class ChatActivity extends AppCompatActivity {
         chatAddButton = (ImageButton) findViewById(R.id.chat_add_btn);
         chatSendButton = (ImageButton) findViewById(R.id.chat_send_btn);
         chatMessage = (EditText) findViewById(R.id.chat_message_view);
+        recyclerView = (RecyclerView) findViewById(R.id.messages_list);
 
+        messagesList = new ArrayList<>();
         rootRef = FirebaseDatabase.getInstance().getReference();
         auth = FirebaseAuth.getInstance();
         currentUserId = auth.getCurrentUser().getUid();
@@ -67,6 +80,14 @@ public class ChatActivity extends AppCompatActivity {
         titleUserName = (TextView) view.findViewById(R.id.chat_user_name);
         titleLastSeen = (TextView) view.findViewById(R.id.chat_last_seen);
         userImage = (CircleImageView) view.findViewById(R.id.chat_user_image);
+
+        messageAdapter = new MessageAdapter(messagesList);
+        layoutManager = new LinearLayoutManager(this);
+        recyclerView.setHasFixedSize(true);
+        recyclerView.setLayoutManager(layoutManager);
+        recyclerView.setAdapter(messageAdapter);
+
+        loadMessages();
 
         titleUserName.setText(userName);
         rootRef.child("ChatUsers").child(chatUser).addValueEventListener(new ValueEventListener() {
@@ -132,6 +153,37 @@ public class ChatActivity extends AppCompatActivity {
             }
         });
 
+    }
+
+    private void loadMessages() {
+        rootRef.child("message").child(currentUserId).child(chatUser).addChildEventListener(new ChildEventListener() {
+            @Override
+            public void onChildAdded(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
+                Messages messages = dataSnapshot.getValue(Messages.class);
+                messagesList.add(messages);
+                messageAdapter.notifyDataSetChanged();
+            }
+
+            @Override
+            public void onChildChanged(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
+
+            }
+
+            @Override
+            public void onChildRemoved(@NonNull DataSnapshot dataSnapshot) {
+
+            }
+
+            @Override
+            public void onChildMoved(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
+
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        });
     }
 
     private void sendMessage() {
