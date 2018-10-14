@@ -36,11 +36,8 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
     public void onBindViewHolder(@NonNull MessageViewHolder holder, int position) {
         firebaseAuth = FirebaseAuth.getInstance();
         String current_user_id = firebaseAuth.getCurrentUser().getUid();
-        Log.i("mLog", current_user_id + " 1");
         Messages messages = messagesList.get(position);
         String from_user = messages.getFrom();
-        Log.e("mLog", from_user + " 2");
-        Log.i("mLog", messages.getMessage());
         if (from_user.equals(current_user_id)) {
             holder.messageText.getResources().getColor(R.color.messageFromColor);
             holder.messageText.setTextColor(Color.BLACK);

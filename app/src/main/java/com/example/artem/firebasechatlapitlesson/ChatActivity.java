@@ -51,10 +51,11 @@ public class ChatActivity extends AppCompatActivity {
     private List<Messages> messagesList;
     private LinearLayoutManager layoutManager;
     private MessageAdapter messageAdapter;
-    private static final int TOTAL_ITEMS_TO_LOAD = 7;
+    private static final int TOTAL_ITEMS_TO_LOAD = 10;
     private int currentPage = 1;
     private SwipeRefreshLayout swipeRefresh;
     private String lastKey = "";
+    private String prevKey = "";
     private int itemPos = 0;
 
     @Override
@@ -176,25 +177,31 @@ public class ChatActivity extends AppCompatActivity {
     private void loadMoreMessages() {
         DatabaseReference messageRef = rootRef.child("message").child(currentUserId).child(chatUser);
 
-        Query messageQuery = messageRef.orderByKey().endAt(lastKey);
+        Query messageQuery = messageRef.orderByKey().endAt(lastKey).limitToLast(10);
 
         messageQuery.addChildEventListener(new ChildEventListener() {
             @Override
             public void onChildAdded(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
-                Messages messages = dataSnapshot.getValue(Messages.class);
-                messagesList.add(itemPos++, messages);
-                if (itemPos == 1){
-                    String messageKey = dataSnapshot.getKey();
-                    lastKey = messageKey;
-
+                Messages message = dataSnapshot.getValue(Messages.class);
+                String messageKey = dataSnapshot.getKey();
+                if(!prevKey.equals(messageKey)){
+                    messagesList.add(itemPos++, message);
+                } else {
+                    prevKey = lastKey;
                 }
+
+                if(itemPos == 1) {
+                    lastKey = messageKey;
+                }
+
+
+                Log.i("mLog", "Last Key: " + lastKey + "|Prev Key : " + prevKey + "|Message Key : " + messageKey);
 
                 messageAdapter.notifyDataSetChanged();
 
-//                recyclerView.scrollToPosition(messagesList.size() - 1);
                 swipeRefresh.setRefreshing(false);
 
-                layoutManager.scrollToPositionWithOffset(7, 0);
+                layoutManager.scrollToPositionWithOffset(10, 0);
             }
 
             @Override
@@ -228,19 +235,24 @@ public class ChatActivity extends AppCompatActivity {
         messageQuery.addChildEventListener(new ChildEventListener() {
             @Override
             public void onChildAdded(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
-                Messages messages = dataSnapshot.getValue(Messages.class);
+                Messages message = dataSnapshot.getValue(Messages.class);
 
                 itemPos++;
-                if (itemPos == 1){
+
+                if(itemPos == 1){
+
                     String messageKey = dataSnapshot.getKey();
+
                     lastKey = messageKey;
+                    prevKey = messageKey;
 
                 }
 
-                messagesList.add(messages);
+                messagesList.add(message);
                 messageAdapter.notifyDataSetChanged();
 
                 recyclerView.scrollToPosition(messagesList.size() - 1);
+
                 swipeRefresh.setRefreshing(false);
             }
 
