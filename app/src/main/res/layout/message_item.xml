@@ -31,19 +31,10 @@
         android:layout_height="wrap_content"
         android:layout_alignStart="@+id/name_view"
         android:layout_below="@+id/name_view"
-        android:layout_marginTop="10dp"
+        android:layout_marginTop="5dp"
+        android:padding="5dp"
         android:text="User default Status"
         android:background="@drawable/text_background"/>
-
-    <ImageView
-        android:id="@+id/user_single_online_icon"
-        android:layout_width="8dp"
-        android:layout_height="wrap_content"
-        android:layout_alignTop="@+id/name_view"
-        android:layout_marginLeft="10dp"
-        android:layout_toEndOf="@+id/name_view"
-        android:visibility="invisible"
-        app:srcCompat="@drawable/ic_online" />
 
     <TextView
         android:id="@+id/message_time"
@@ -54,5 +45,15 @@
         android:layout_marginEnd="110dp"
         android:layout_marginBottom="1dp"
         android:text="0.00" />
+
+    <ImageView
+        android:id="@+id/message_image"
+        android:layout_width="250dp"
+        android:layout_height="wrap_content"
+        android:layout_alignStart="@+id/name_view"
+        android:layout_marginStart="3dp"
+        android:layout_below="@id/message_view"
+        app:srcCompat="@android:color/background_light" />
+
 
 </RelativeLayout>
