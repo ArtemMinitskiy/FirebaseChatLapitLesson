@@ -4,6 +4,7 @@ import android.content.Context;
 import android.os.Message;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -26,6 +27,7 @@ import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.Query;
 import com.google.firebase.database.ServerValue;
 import com.google.firebase.database.ValueEventListener;
 
@@ -49,6 +51,9 @@ public class ChatActivity extends AppCompatActivity {
     private List<Messages> messagesList;
     private LinearLayoutManager layoutManager;
     private MessageAdapter messageAdapter;
+    private static final int TOTAL_ITEMS_TO_LOAD = 10;
+    private int currentPage = 1;
+    private SwipeRefreshLayout swipeRefresh;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -59,7 +64,7 @@ public class ChatActivity extends AppCompatActivity {
         chatSendButton = (ImageButton) findViewById(R.id.chat_send_btn);
         chatMessage = (EditText) findViewById(R.id.chat_message_view);
         recyclerView = (RecyclerView) findViewById(R.id.messages_list);
-
+        swipeRefresh = (SwipeRefreshLayout) findViewById(R.id.message_swipe_layout);
         messagesList = new ArrayList<>();
         rootRef = FirebaseDatabase.getInstance().getReference();
         auth = FirebaseAuth.getInstance();
@@ -153,15 +158,32 @@ public class ChatActivity extends AppCompatActivity {
             }
         });
 
+        swipeRefresh.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+            @Override
+            public void onRefresh() {
+                currentPage++;
+                messagesList.clear();
+                loadMessages();
+            }
+        });
+
     }
 
     private void loadMessages() {
-        rootRef.child("message").child(currentUserId).child(chatUser).addChildEventListener(new ChildEventListener() {
+
+        DatabaseReference messageRef = rootRef.child("message").child(currentUserId).child(chatUser);
+
+        Query messageQuery = messageRef.limitToLast(currentPage * TOTAL_ITEMS_TO_LOAD);
+
+        messageQuery.addChildEventListener(new ChildEventListener() {
             @Override
             public void onChildAdded(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
                 Messages messages = dataSnapshot.getValue(Messages.class);
                 messagesList.add(messages);
                 messageAdapter.notifyDataSetChanged();
+
+                recyclerView.scrollToPosition(messagesList.size() - 1);
+                swipeRefresh.setRefreshing(false);
             }
 
             @Override
