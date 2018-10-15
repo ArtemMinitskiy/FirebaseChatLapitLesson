@@ -38,6 +38,7 @@ import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
+import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -76,6 +77,7 @@ public class ChatActivity extends AppCompatActivity {
         chatAddButton = (ImageButton) findViewById(R.id.chat_add_btn);
         chatSendButton = (ImageButton) findViewById(R.id.chat_send_btn);
         chatMessage = (EditText) findViewById(R.id.chat_message_view);
+        userImage = (CircleImageView) findViewById(R.id.chat_user_image);
         recyclerView = (RecyclerView) findViewById(R.id.messages_list);
         swipeRefresh = (SwipeRefreshLayout) findViewById(R.id.message_swipe_layout);
         messagesList = new ArrayList<>();
@@ -124,7 +126,7 @@ public class ChatActivity extends AppCompatActivity {
                     String lastSeenTime = getTimeAgo.getTimeAgo(lastTime, getApplicationContext());
                     titleLastSeen.setText("Last Seen: " + lastSeenTime);
                 }
-//                userImage
+                Picasso.get().load(image).placeholder(R.drawable.user_default).into(userImage);
             }
 
             @Override

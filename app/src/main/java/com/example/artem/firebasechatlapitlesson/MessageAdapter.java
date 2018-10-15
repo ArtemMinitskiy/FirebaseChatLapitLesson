@@ -41,8 +41,8 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
 
     @Override
     public void onBindViewHolder(@NonNull final MessageViewHolder holder, int position) {
-//        firebaseAuth = FirebaseAuth.getInstance();
-//        String current_user_id = firebaseAuth.getCurrentUser().getUid();
+        FirebaseAuth firebaseAuth = FirebaseAuth.getInstance();
+        String current_user_id = firebaseAuth.getCurrentUser().getUid();
         Messages messages = messagesList.get(position);
         String from_user = messages.getFrom();
         String message_type = messages.getType();
@@ -69,16 +69,15 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
             Picasso.get().load(messages.getMessage()).placeholder(R.drawable.user_default).into(holder.messageImage);
         }
 
-//        String from_user = messages.getFrom();
-//        if (from_user.equals(current_user_id)) {
-//            holder.messageText.getResources().getColor(R.color.messageFromColor);
-//            holder.messageText.setTextColor(Color.BLACK);
-//        }else {
-//            holder.messageText.setBackgroundResource(R.drawable.text_background);
-//            holder.messageText.setTextColor(Color.WHITE);
-//        }
+        if (from_user.equals(current_user_id)) {
+            holder.messageText.getResources().getColor(R.color.messageColor);
+            holder.messageText.setTextColor(Color.BLACK);
+        }else {
+            holder.messageText.setBackgroundResource(R.drawable.text_from_background);
+            holder.messageText.setTextColor(Color.BLACK);
+        }
         holder.messageText.setText(messages.getMessage());
-//        holder.nameUser.setText(messages);
+
     }
 
     @Override
@@ -88,12 +87,13 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
 
 
     public class MessageViewHolder extends RecyclerView.ViewHolder{
-        TextView messageText, nameUser;
+        TextView messageText, nameUser, timeText;
         CircleImageView userImage;
         ImageView messageImage;
         public MessageViewHolder(View view) {
             super(view);
             messageText = (TextView) view.findViewById(R.id.message_view);
+            timeText = (TextView) view.findViewById(R.id.message_time);
             nameUser = (TextView) view.findViewById(R.id.name_view);
             userImage = (CircleImageView) view.findViewById(R.id.user_view);
             messageImage = (ImageView) view.findViewById(R.id.message_image);
